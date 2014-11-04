@@ -96,7 +96,7 @@ sub parse {
 	if(-e "NAMESPACE") {
 		open NAMESPACE, "NAMESPACE";
 		while(my $line = <NAMESPACE>) {
-			if($line =~/^import/) {
+			if($line =~/^(import|exportClasses)/i) {
 				push(@importFrom, $line);
 			}
 		}

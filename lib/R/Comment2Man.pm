@@ -61,12 +61,15 @@ sub draft {
     print "Done, you doc drafts are in /man dir.\n\n";
 }
 
-
+# parse the big source code file which contains everything
 sub parse {
 	open my $R_FH, $_[0] or die $@;
 	my $is_overwrite = $_[1];
 	my @lines = <$R_FH>;
 	
+	# each `item` is a hash that contains values in each section
+	# also some meta data like the type of the page and the type of the function/class
+	# so you can think here the number of items is the final number of pages
 	my @items;
     for(my $i = 0; $i < scalar(@lines); $i ++) {
 		my $line = $lines[$i];
@@ -74,20 +77,24 @@ sub parse {
 		
 		# documented item start with # ## title or something like that
 		if($line =~/^#\s+[=@#*\-+$%&]{2}\s*title\s*$/) {
+			# the read method here only splice the merged file into chunks
 			$item = R::Comment2Man::Item->read(\@lines, $i, is_function => 1);
 			push(@items, $item);
-		} elsif($line =~/^#\s+[=@#*\-+$%&]{2}\s*title\s*\(\s*data:\s*(\S+)\s*\)/) {
+		} elsif($line =~/^#\s+[=@#*\-+$%&]{2}\s*title\s*\(\s*data:\s*(\S+)\s*\)/) {  # data page
 			$item = R::Comment2Man::Item->read(\@lines, $i, is_function => 0);
-			$item->{_function_name} = $1;
-			$item->{_function_args} = "data($1)";
+			$item->{_page_name} = $1;
+			$item->{_usage} = "data($1)";
+			$item->{_page_type} = "data"
 			push(@items, $item);
-		} elsif($line =~/^#\s+[=@#*\-+$%&]{2}\s*title\s*\(\s*package:\s*(\S+)\s*\)/) {
+		} elsif($line =~/^#\s+[=@#*\-+$%&]{2}\s*title\s*\(\s*package:\s*(\S+)\s*\)/) {  # package page
 			$item = R::Comment2Man::Item->read(\@lines, $i, is_function => 0);
-			$item->{_function_name} = "$1-package";
-			$item->{_function_args} = "package($1)";
+			$item->{_page_name} = "$1-package";
+			$item->{_usage} = "package($1)";
+			$item->{_page_type} = "package"
 			push(@items, $item);
 		}
 		
+		# page_type will be data/package/function/S4method/S4class/S3method/...
 	}
 	
 	@items = sort { $a->{_function_name} cmp $b->{_function_name} } @items;
@@ -96,7 +103,7 @@ sub parse {
 	if(-e "NAMESPACE") {
 		open NAMESPACE, "NAMESPACE";
 		while(my $line = <NAMESPACE>) {
-			if($line =~/^(import|exportClasses)/i) {
+			if($line =~/^import/i) {
 				push(@importFrom, $line);
 			}
 		}
@@ -104,25 +111,33 @@ sub parse {
 	}
 	
 	my @parsed_items;
-	open NAMESPACE, ">NAMESPACE";
-	print NAMESPACE "export(\n";
+	
 	for(my $i = 0; $i < scalar(@items); $i ++) {
+
+		# parse->format returns final tex code
 		my ($section_name, $section_value) = $items[$i]->parse()->format();
 		if($is_overwrite == 0 and -e "man/$items[$i]->{_function_name}.rd") {
             my ($old_section_name, $old_section_value) = read_manfile_section("man/$items[$i]->{_function_name}.rd");
 			foreach (@$old_section_name) {
 				print "  update $_\n";
 			}
+
+			# if a section already in man/ but not in comment, it will be kept
 			($section_name, $section_value) = combine_sections($section_name, $section_value, $old_section_name, $old_section_value);
 		}
-		output($items[$i]->{_function_name}, $section_name, $section_value);
-		if($items[$i]->{_function_args} =~/^data\(/ or $items[$i]->{_function_args} =~/^package\(/) {
-		
-		} else {
+		output($items[$i]->{_page_name}, $section_name, $section_value, $item[i]->{_page_type});
+		print "man/$items[$i]->{_page_name}.rd... done.\n\n";
+	}
+
+
+	open NAMESPACE, ">NAMESPACE";
+	print NAMESPACE "export(\n";
+	for(my $i = 0; $i < scalar(@items); $i ++) {
+		if($items[$i]->{_page_type} eq "function") {
 			print NAMESPACE "\t$items[$i]->{_function_name}".($i == $#items ? "" : ",")."\n";
 		}
-		print "man/$items[$i]->{_function_name}.rd... done.\n\n";
 	}
+	# other .....
 	print NAMESPACE ")\n";
 	
 	print NAMESPACE "\n";
@@ -134,6 +149,7 @@ sub parse {
 }
 
 # alignment of two vectors of section name
+# we use alignment here because we want the order be kept also
 sub combine_sections {
 	my $section_name = shift;
 	my $section_value = shift;
@@ -160,13 +176,16 @@ sub combine_sections {
 
 # write to the man file
 sub output {
-	my $function_name = shift;
+	my $page_name = shift;
 	my $section_name = shift;
 	my $section_value = shift;
+	my $page_type = shift;
 	
-	open my $fh, ">man/$function_name.rd";
+	open my $fh, ">man/$page_name.rd";
 	for(my $i = 0; $i < scalar(@$section_name); $i ++) {
-		if($section_name->[$i] eq "usage" and $section_value->[$i] =~/^package\(/) {
+
+		# package page doesn't have usage, but other pages all have
+		if($section_name->[$i] eq "usage" and $page_type eq "package") {
 			next;
 		}
 		if($section_name->[$i] eq "name" or 
@@ -265,6 +284,7 @@ sub read {
 	my $index = shift;
 	my $is_function = {@_}->{is_function};
 	
+	# it is used to order, but I cannot remember, shit!
 	my $dl = [];
 	for my $i ("a".."z") {
 		for my $j ("a".."z") {
@@ -282,7 +302,7 @@ sub read {
 				$current_section = $1;
 				$current_section = check_synonyms($current_section);
 				$current_section = shift(@$dl)."_".$current_section;
-				$sections->{$current_section} = [];
+				$sections->{$current_section} = [];  # array of lines
 			} else {
 				$line =~s/^#\s?//s;
 				$line =~s/^\s+$//g;
@@ -290,8 +310,8 @@ sub read {
 			}
 		} elsif($is_function) {
 			my @res = get_nearest_function_info($lines_ref, $i);
-			$sections->{_function_name} = $res[0];
-			$sections->{_function_args} = $res[1];
+			$sections->{_page_name} = $res[0];
+			$sections->{_usage} = $res[1];
 			last;
 		} else {
 			last;
@@ -340,19 +360,19 @@ sub format {
 	my $section_value = [];
 	
 	push(@$section_name, "name");
-	push(@$section_value, $self->{_function_name});
+	push(@$section_value, $self->{_page_name});
 	push(@$section_name, "alias");
-	if($self->{_function_args} =~/^package\(/) {
-		push(@$section_value, "$self->{_function_name}");
+	if($self->{_usage} =~/^package\(/) {
+		push(@$section_value, "$self->{_page_name}");
 	} else {
-		push(@$section_value, "$self->{_function_name}");
+		push(@$section_value, "$self->{_page_name}");
 	}
 	
-	if($self->{_function_args} =~/^data\(/) {
+	if($self->{_usage} =~/^data\(/) {
 		push(@$section_name, "docType");
 		push(@$section_value, "data");
 	}
-	if($self->{_function_args} =~/^package\(/) {
+	if($self->{_usage} =~/^package\(/) {
 		push(@$section_name, "docType");
 		push(@$section_value, "package");
 	}
@@ -371,7 +391,7 @@ sub format {
 		
 		if($last_section =~/description/i) {
 			push(@$section_name, "usage");
-			push(@$section_value, $self->{_function_args});
+			push(@$section_value, $self->{_usage});
 			$last_section = "usage";
 		}
 		
@@ -575,6 +595,7 @@ sub is_code_block {
 }
 
 # get the function name and its arguments
+# also needs to check it is a S3method, S4mehtod or S4class
 sub get_nearest_function_info {
 	my $lines_ref = shift;
 	my $index = shift;
@@ -605,15 +626,51 @@ sub get_nearest_function_info {
                     }
                     $function_args .= " " x (length($function_name)+3) . $line . "\n";
                 }
-				
-				
             }
 			$function_args = re_format_function_args($function_args);
 			if(my ($g, $c) = check_generic_function($function_name)) {
-				return ($function_name, "\\method{$g}{$c}($function_args)");
+				return ($function_name, "\\method{$g}{$c}($function_args)", "S3method", $c);
 			} else {
-				return ($function_name, "$function_name($function_args)");
+				return ($function_name, "$function_name($function_args)", "");
 			}
+		} elsif($line =~/setMethod\(f\s*=\s*"(.*?)"/) {
+			$function_name = $1;
+			$i ++; 
+			$line = $lines_ref->[$i];
+            chomp $line;
+            $line =~/signature\s*=\s*"(.*?)"/;
+            my $c = $1;
+
+            $function_name = $1;
+			$i ++; 
+			$line = $lines_ref->[$i];
+            chomp $line;
+            if($line =~/definition\s*function\s*\(/) {
+				       
+	            my $raw_args_str = $POSTMATCH;
+	            my $left_parenthese_flag = 1; # there are one unmatched left parenthese
+	            my $closing_position;
+	            if(($closing_position = find_closing_parenthese($raw_args_str, \$left_parenthese_flag)) > -1) {
+	                $function_args = substr($raw_args_str, 0, $closing_position);
+	            } else {
+	                $function_args = $raw_args_str;
+	                for($i ++; $i < scalar(@$lines_ref); $i ++) {
+						$line = $lines_ref->[$i];
+	                    chomp $line;
+	                    $line =~s/^(\s+)//;
+	                    if(($closing_position = find_closing_parenthese($line, \$left_parenthese_flag)) > -1) {
+	                        $function_args .= substr($line, 0, $closing_position);
+	                        last;
+	                    }
+	                    $function_args .= " " x (length($function_name)+3) . $line . "\n";
+	                }
+	            }
+				$function_args = re_format_function_args($function_args);
+				return ($function_name, "$function_name($function_args)", "S4method", $c);
+			}
+
+		} elsif($line =~/setClass\("(.*?)"/) {
+			return ($1, "$1(...)", "S4class", $1)
 		}
 	}
 	
@@ -687,9 +744,17 @@ sub trans_url {
 }
 
 sub trans_font {
-	
+	my $text = shift;
+	$text =~s/\*\*(.*?)\*\*/\\textbf{$1}/g;
+	$text =~s/__(.*?)__/\\textbf{$1}/g;
+	$text =~s/(?!\*)\*(.*?)\*(?<!\*)/\\emph{$1}/g;
+	$text =~s/(?!_)_(.*?)_(?<!_)/\\emph{$1}/g;
+
+	return $text;
 }
 
+
+# quite simple way, does not take consideration of the self-defined s3 generic method
 sub check_generic_function {
 	my $gf = {".__C_BindingFunction" => 1,
 			".__C__derivedDefaultMethod" => 1,

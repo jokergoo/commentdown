@@ -136,6 +136,7 @@ my $PREDEFINED_SECTION_NAME = {
 	references => 1,
 	author => 1,
 	value => 1,
+	seealso => 1,
 	examples => 1,
 
 };
@@ -148,7 +149,7 @@ sub string {
 	} elsif(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
 		"\\$self->{name}"."{\n$self->{tex}\n}\n";
 	} else {
-		"\\section{$self->{name}}{\n$self->{tex}\n}\n";
+		"\\section{".ucfirst($self->{name})."}{\n$self->{tex}\n}\n";
 	}
 }
 

@@ -141,6 +141,7 @@ sub is_code_block {
 # something like url, code link, font ...
 sub inline_format {
 	my $str = shift;
+	#$str = trans_font($str);
 	$str = trans_code($str);
 	$str = trans_url($str);
 	return $str;

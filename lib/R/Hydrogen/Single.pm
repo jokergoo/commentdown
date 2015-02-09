@@ -316,9 +316,7 @@ sub get_nearest_function_info {
 
             $i ++; 
 			$line = $lines_ref->[$i];
-            chomp $line;
             if($line =~/definition\s*=\s*function\s*\(/) {
-				       
 	            my $raw_args_str = $POSTMATCH;
 	            my $left_parenthese_flag = 1; # there are one unmatched left parenthese
 	            my $closing_position;
@@ -337,7 +335,7 @@ sub get_nearest_function_info {
 	                    $function_args .= " " x (length($function_name)+3) . $line . "\n";
 	                }
 	            }
-				$function_args = re_format_function_args($function_args);
+	            $function_args = re_format_function_args($function_args);
 				return ($function_name, "\\S4method{$function_name}{$c}($function_args)", "S4method", $c);
 			}
 

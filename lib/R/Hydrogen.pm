@@ -104,6 +104,8 @@ sub parse {
 		close(NAMESPACE);
 	}
 	
+	print "\n";
+	
 	my @parsed_items;
 	for(my $i = 0; $i < scalar(@items); $i ++) {
 

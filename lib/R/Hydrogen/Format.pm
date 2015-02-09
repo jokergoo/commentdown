@@ -104,7 +104,7 @@ sub read_paragraph {
 		my $line = $lines_ref->[$i];
 		chomp $line;
 		$paragraph .= "$line ";
-		if($i == $#$lines_ref or $lines_ref->[$i] eq "") {
+		if($i == $#$lines_ref or $lines_ref->[$i] =~/^\s*$/) {
 			return ($paragraph, $i);
 		}
 		

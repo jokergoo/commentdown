@@ -29,8 +29,16 @@ sub add_line {
 sub parse {
 	my $self = shift;
 	
-	$self->convert_to_tree()->format();
+	for(my $i = $#{$self->{lines}}; $i >= 0; $i --) {
+		if($self->{lines}->[$i] !~/^\s*$/) {
+			pop(@{$self->{lines}});
+		} else {
+			last;
+		}
+	}
 
+	$self->convert_to_tree()->format();
+print Dumper $self;
 	return $self;
 }
 
@@ -89,7 +97,7 @@ sub format {
 	foreach my $k (sort keys %{$self->{tree}}) {
 		my $v = $self->{tree}->{$k};
 		if($k =~/_paragraph/) {
-			$str .= inline_format($v)."\n";
+			$str .= inline_format($v)."\n\n";
 		} elsif($k =~/_named_item/) {
 			$str .= "\\describe{\n";
 			for(my $i = 0; $i < scalar(@{$v->{name}}); $i ++) {
@@ -110,6 +118,7 @@ sub format {
 			$str .= "  }\n\n";
 		}
 	}
+
 	$self->{tex} = $str;
 	return($self);
 }
@@ -127,7 +136,7 @@ my $PREDEFINED_SECTION_NAME = {
 	references => 1,
 	author => 1,
 	value => 1,
-	example => 1,
+	examples => 1,
 
 };
 

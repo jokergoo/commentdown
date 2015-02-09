@@ -79,6 +79,7 @@ sub read {
 			} else {
 				$line =~s/^#\s?//s;  # leading space
 				$line =~s/^\s+$//g;  # tracing space
+				#$line .= "\n";
 				$current_section->add_line($line);
 			}
 		} elsif($is_function) {

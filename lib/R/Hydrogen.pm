@@ -4,6 +4,7 @@ use strict;
 use English;
 use File::Temp qw(tempfile);
 use Data::Dumper;
+use R::Hydrogen::Single;
 
 our $VERSION = 0.4;
 

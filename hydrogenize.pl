@@ -8,7 +8,6 @@ BEGIN {
 use strict;
 use R::Hydrogen;
 
-my $package = shift;
+my $path = shift;
 
-chdir $package;
-R::Hydrogen->hydrogenize('R');
+R::Hydrogen->hydrogenize("$path/R");

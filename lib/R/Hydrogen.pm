@@ -4,6 +4,7 @@ use strict;
 use English;
 use File::Temp qw(tempfile);
 use Data::Dumper;
+use R::Hydrogen::Single;
 
 our $VERSION = 0.4;
 
@@ -23,12 +24,12 @@ sub hydrogenize {
     if( -f $dir) {   # if only one R script
         @r_files = ($dir);
     } elsif(-d $dir) {    # if it is a dir
-        @r_files = glob("$dir/*.R");
+        @r_files = glob("$dir/R/*.R");
     } else {
         die "cannot find $dir.\n";
     }
 
-    $DIR = "$dir/../";
+    $DIR = "$dir";
     
     # merge all the R script into one file
     foreach my $r_file (@r_files) {
@@ -107,14 +108,18 @@ sub parse {
 	for(my $i = 0; $i < scalar(@items); $i ++) {
 
 		my $s;
-		my $man_file = "$DIR/".$items[$i]->meta("page_name").".rd";
+		my $man_file = "$DIR/man/".$items[$i]->meta("page_name").".rd";
 		if($is_overwrite) {
 			$s = $items[$i]->parse()->string();
 		} else {
 			my $it1 = $items[$i]->parse();
-			my $it2 = read_man_file($man_file);
+			my $it2 = R::Hydrogen::Single::read_man_file($man_file);
 
-			$s = R::Hydrogen::Single::combine($it1, $it2);
+			if(defined($it2)) {
+				$s = R::Hydrogen::Single::combine($it1, $it2);
+			} else {
+				$s = $it1;
+			}
 		}
 
 		open MAN, ">$man_file";

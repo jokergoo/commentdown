@@ -10,5 +10,4 @@ use R::Hydrogen;
 
 my $package = shift;
 
-chdir $package;
-R::Hydrogen->hydrogenize('R');
+R::Hydrogen->hydrogenize("$package");

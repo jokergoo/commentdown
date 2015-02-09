@@ -49,4 +49,4 @@ my $m;
 			/x;
 
 	my @a = $text =~ /\\(\w+(\{\w+\})?)\s*($m)/gs;
-print "'$a[1]'";
+map {print "$_\t$a[$_]\n\n"} 0..$#a;

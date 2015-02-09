@@ -118,6 +118,7 @@ sub format {
 my $PREDEFINED_SECTION_NAME = {
 	title => 1,
 	alias => 1,
+	docType => 1,
 	name => 1,
 	description => 1,
 	usage => 1,
@@ -133,7 +134,9 @@ my $PREDEFINED_SECTION_NAME = {
 sub string {
 	my $self = shift;
 
-	if(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
+	if($self->{name} eq "name" || $self->{name} eq "alias" || $self->{name} eq "docType") {
+		"\\$self->{name}"."{$self->{tex}}\n";
+	} elsif(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
 		"\\$self->{name}"."{\n$self->{tex}\n}\n";
 	} else {
 		"\\section{$self->{name}}{\n$self->{tex}\n}\n";

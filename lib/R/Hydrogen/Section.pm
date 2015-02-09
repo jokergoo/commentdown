@@ -29,16 +29,16 @@ sub add_line {
 sub parse {
 	my $self = shift;
 	
-	for(my $i = $#{$self->{lines}}; $i >= 0; $i --) {
-		if($self->{lines}->[$i] !~/^\s*$/) {
-			pop(@{$self->{lines}});
-		} else {
-			last;
-		}
-	}
+	# for(my $i = $#{$self->{lines}}; $i >= 0; $i --) {
+	# 	if($self->{lines}->[$i] =~/^\s*$/) {
+	# 		pop(@{$self->{lines}});
+	# 	} else {
+	# 		last;
+	# 	}
+	# }
 
 	$self->convert_to_tree()->format();
-print Dumper $self;
+# print Dumper $self;
 	return $self;
 }
 

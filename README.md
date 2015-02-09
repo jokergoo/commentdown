@@ -3,11 +3,11 @@
 
 Comments are marked as Markdown-style.
 
-It still has a lot of bugs, but at least it works.
+Now it supports S3 methods, S4 methods and S4 classes.
 
 The module can be run as:
 
-    perl commentdown.pl your-package-directory
+    perl hydrogenize.pl your-package-directory
 
 An example of the comment of a function is:
 

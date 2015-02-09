@@ -3,6 +3,7 @@ package R::Hydrogen::Single;
 use English;
 use Data::Dumper;
 use R::Hydrogen::Section;
+use R::Hydrogen::Align;
 use Storable;
 use strict;
 
@@ -30,7 +31,7 @@ sub check_synonyms {
 sub new {
 	my $class = shift;
 
-	my $self = {meta => {}, section => {}};
+	my $self = {meta => {}, section => []};
 	bless $self, $class;
 	return($self);
 }
@@ -78,6 +79,7 @@ sub read {
 			} else {
 				$line =~s/^#\s?//s;  # leading space
 				$line =~s/^\s+$//g;  # tracing space
+				#$line .= "\n";
 				$current_section->add_line($line);
 			}
 		} elsif($is_function) {
@@ -88,10 +90,10 @@ sub read {
 			$single->meta(page_type => $res[2]);
 			$single->meta(class => $res[3]);
 
-			if($class eq "S4class") {
-				$single->meta(page_name => $res[0]."-class");
-			} elsif($class eq "S4method") {
-				$single->meta(page_name => $res[0]."-method");
+			if($res[2] eq "S4class") {
+				$single->meta(page_name => "$res[0]-class");
+			} elsif($res[2] eq "S4method") {
+				$single->meta(page_name => "$res[0]-$res[3]-method");
 			} else {
 				$single->meta(page_name => $res[0]);
 			}
@@ -151,6 +153,8 @@ sub parse {
 	$name->{tex} = $self->meta("page_name");
 	push(@{$self->{section}}, $name);
 
+	my $page_type = $self->meta("page_type");
+
 	# alias
 	if($page_type eq "S4class") {
 
@@ -195,7 +199,7 @@ sub parse {
 	my $usage = R::Hydrogen::Section->new("usage");
 
 	if(!($page_type eq "package" ||
-	   $page_type eq "class")) {
+	   $page_type eq "S4class")) {
 		$usage->{tex} = $self->meta("usage");
 		push(@{$self->{section}}, $usage);
 	}
@@ -313,9 +317,7 @@ sub get_nearest_function_info {
 
             $i ++; 
 			$line = $lines_ref->[$i];
-            chomp $line;
             if($line =~/definition\s*=\s*function\s*\(/) {
-				       
 	            my $raw_args_str = $POSTMATCH;
 	            my $left_parenthese_flag = 1; # there are one unmatched left parenthese
 	            my $closing_position;
@@ -334,7 +336,7 @@ sub get_nearest_function_info {
 	                    $function_args .= " " x (length($function_name)+3) . $line . "\n";
 	                }
 	            }
-				$function_args = re_format_function_args($function_args);
+	            $function_args = re_format_function_args($function_args);
 				return ($function_name, "\\S4method{$function_name}{$c}($function_args)", "S4method", $c);
 			}
 
@@ -530,9 +532,9 @@ sub export_str {
 	if($page_type eq "S4class") {
 		"exportClasses(".$self->meta("class").")";
 	} elsif($page_type eq "S4method") {
-		"exportMethods(".$self->meta("page_name").")";
+		"exportMethods(".$self->meta("page_function").")";
 	} elsif(!($page_type eq "data" || $page_type eq "package")) {
-		"export("..$self->meta("page_name").")";
+		"export(".$self->meta("page_function").")";
 	} else {
 		"";
 	}
@@ -544,11 +546,14 @@ sub read_man_file {
 
 	my $file = shift;
 
-	if(! -e $file) return undef;
+	if(! -e $file) {
+		return undef;
+	}
 
     open F, $file;
 
 	my $text = join "", <F>;
+	close F;
 
 	my $m;
 	$m = qr/
@@ -562,23 +567,25 @@ sub read_man_file {
 			/x;
 
 	my @a = $text =~ /\\(\w+(\{\w+\})?)\s*($m)/gs;
-	close F;
+	
 
-	if(scalar(@a) == 0) return undef;
+	if(scalar(@a) == 0) {
+		return undef;
+	}
 	
 	my $self = R::Hydrogen::Single->new();
-
+	my $s;
 	for(my $i = 0; $i < scalar(@a); $i += 3) {
 		
 		$a[$i + 2] =~s/^\{|\}$//g;
 		$a[$i + 2] =~s/^\s*|\s*$//gs; # removing leading/tracing white space characters
 		
 		if($a[$i+1] eq "") {
-			$s = R::Hydrogen::Section($a[$i]);
+			$s = R::Hydrogen::Section->new($a[$i]);
 			$s->{tex} = $a[$i + 2];
 		} else {
 			$a[$i + 1] =~s/^\{|\}$//mg;
-			$s = R::Hydrogen::Section($a[$i + 1]);
+			$s = R::Hydrogen::Section->new($a[$i + 1]);
 			$s->{tex} = $a[$i + 2];
 		}
 		
@@ -593,23 +600,56 @@ sub combine {
 	my $s1 = shift;
 	my $s2 = shift;
 
-	my $s3 = dclone($s1);
+	my $s3 = Storable::dclone($s1);
 	$s3->{section} = [];
 
-	my $nm1 = [ map { $_->{section}->{name} } @{$s1->{section}} ];
-	my $nm2 = [ map { $_->{section}->{name} } @{$s2->{section}} ];
+	my $nm1 = [ map { $_->{name} } @{$s1->{section}} ];
+	my $nm2 = [ map { $_->{name} } @{$s2->{section}} ];
 
-	my ($align1, $align2) = R::Comment2Man::Align::align($nm1, $nm2);
+	my ($align1, $align2) = R::Hydrogen::Align::align($nm1, $nm2);
+
+	# for(my $i = 0; $i < scalar(@$align1); $i ++) {
+	# 	print "$align1->[$i]\t$align2->[$i]\n";
+	# }
 	
-	my $name;
+	my $s1_copy = Storable::dclone($s1);
+	my $s2_copy = Storable::dclone($s2);
+
+	my $alias = [];
+	my $alias_name = {};
 	for(my $i = 0; $i < scalar(@$align1); $i ++) {
-		if($align1->[$i]) {
+		if($align1->[$i] eq "alias") {
+			my $s1_alias_name = $s1_copy->get_section($align1->[$i])->{"tex"};
+			if(! defined($alias_name->{$s1_alias_name}) ) {
+				push(@$alias, $s1_copy->get_section($align1->[$i]));
+				$s1_copy->pop_section($align1->[$i]);
+				$alias_name->{$s1_alias_name} = 1;
+			}
+		}
+		if($align2->[$i] eq "alias") {
+			my $s2_alias_name = $s2_copy->get_section($align2->[$i])->{"tex"};
+			if(! defined($alias_name->{$s2_alias_name}) ) {
+				push(@$alias, $s2_copy->get_section($align2->[$i]));
+				$s2_copy->pop_section($align2->[$i]);
+				$alias_name->{$s2_alias_name} = 1;
+			} else {
+				$s2_copy->pop_section($align2->[$i]);
+			}
+		}
+		if($align1->[$i] eq "alias" || $align2->[$i] eq "alias") {
+			next;
+		}
+
+		if($align1->[$i] ne "") {
 			push(@{$s3->{section}}, $s1->get_section($align1->[$i]));
-		} elsif($align2->[$i]) {
+		} elsif($align2->[$i] ne "") {
 			push(@{$s3->{section}}, $s2->get_section($align2->[$i]));
 		}
 	}
-	return($s3);
+
+	push(@{$s3->{section}}, @$alias);
+
+	return($s3->sort());
 }
 
 

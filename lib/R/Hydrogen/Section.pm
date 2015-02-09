@@ -29,8 +29,16 @@ sub add_line {
 sub parse {
 	my $self = shift;
 	
-	$self->convert_to_tree()->format();
+	for(my $i = $#{$self->{lines}}; $i >= 0; $i --) {
+		if($self->{lines}->[$i] !~/^\s*$/) {
+			pop(@{$self->{lines}});
+		} else {
+			last;
+		}
+	}
 
+	$self->convert_to_tree()->format();
+print Dumper $self;
 	return $self;
 }
 
@@ -89,7 +97,7 @@ sub format {
 	foreach my $k (sort keys %{$self->{tree}}) {
 		my $v = $self->{tree}->{$k};
 		if($k =~/_paragraph/) {
-			$str .= inline_format($v)."\n";
+			$str .= inline_format($v)."\n\n";
 		} elsif($k =~/_named_item/) {
 			$str .= "\\describe{\n";
 			for(my $i = 0; $i < scalar(@{$v->{name}}); $i ++) {
@@ -110,6 +118,7 @@ sub format {
 			$str .= "  }\n\n";
 		}
 	}
+
 	$self->{tex} = $str;
 	return($self);
 }
@@ -118,6 +127,7 @@ sub format {
 my $PREDEFINED_SECTION_NAME = {
 	title => 1,
 	alias => 1,
+	docType => 1,
 	name => 1,
 	description => 1,
 	usage => 1,
@@ -126,14 +136,16 @@ my $PREDEFINED_SECTION_NAME = {
 	references => 1,
 	author => 1,
 	value => 1,
-	example => 1,
+	examples => 1,
 
 };
 
 sub string {
 	my $self = shift;
 
-	if(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
+	if($self->{name} eq "name" || $self->{name} eq "alias" || $self->{name} eq "docType") {
+		"\\$self->{name}"."{$self->{tex}}\n";
+	} elsif(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
 		"\\$self->{name}"."{\n$self->{tex}\n}\n";
 	} else {
 		"\\section{$self->{name}}{\n$self->{tex}\n}\n";

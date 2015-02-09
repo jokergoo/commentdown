@@ -10,4 +10,4 @@ use R::Hydrogen;
 
 my $path = shift;
 
-R::Hydrogen->hydrogenize("$path/R");
+R::Hydrogen->hydrogenize("$package");

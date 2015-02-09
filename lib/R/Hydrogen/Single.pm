@@ -608,19 +608,49 @@ sub combine {
 	my $nm2 = [ map { $_->{name} } @{$s2->{section}} ];
 
 	my ($align1, $align2) = R::Hydrogen::Align::align($nm1, $nm2);
+
+	# for(my $i = 0; $i < scalar(@$align1); $i ++) {
+	# 	print "$align1->[$i]\t$align2->[$i]\n";
+	# }
 	
-	print @$nm1, "\n";
-	print @$nm2, "\n";
-	print @$align1, "\n";
-	print @$align2, "\n";
+	my $s1_copy = Storable::dclone($s1);
+	my $s2_copy = Storable::dclone($s2);
+
+	my $alias = [];
+	my $alias_name = {};
 	for(my $i = 0; $i < scalar(@$align1); $i ++) {
-		if($align1->[$i]) {
+		if($align1->[$i] eq "alias") {
+			my $s1_alias_name = $s1_copy->get_section($align1->[$i])->{"tex"};
+			if(! defined($alias_name->{$s1_alias_name}) ) {
+				push(@$alias, $s1_copy->get_section($align1->[$i]));
+				$s1_copy->pop_section($align1->[$i]);
+				$alias_name->{$s1_alias_name} = 1;
+			}
+		}
+		if($align2->[$i] eq "alias") {
+			my $s2_alias_name = $s2_copy->get_section($align2->[$i])->{"tex"};
+			if(! defined($alias_name->{$s2_alias_name}) ) {
+				push(@$alias, $s2_copy->get_section($align2->[$i]));
+				$s2_copy->pop_section($align2->[$i]);
+				$alias_name->{$s2_alias_name} = 1;
+			} else {
+				$s2_copy->pop_section($align2->[$i]);
+			}
+		}
+		if($align1->[$i] eq "alias" || $align2->[$i] eq "alias") {
+			next;
+		}
+
+		if($align1->[$i] ne "") {
 			push(@{$s3->{section}}, $s1->get_section($align1->[$i]));
-		} elsif($align2->[$i]) {
+		} elsif($align2->[$i] ne "") {
 			push(@{$s3->{section}}, $s2->get_section($align2->[$i]));
 		}
 	}
-	return($s3);
+
+	push(@{$s3->{section}}, @$alias);
+
+	return($s3->sort());
 }
 
 

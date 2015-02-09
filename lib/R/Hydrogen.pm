@@ -109,6 +109,8 @@ sub parse {
 
 		my $s;
 		my $man_file = "$DIR/man/".$items[$i]->meta("page_name").".rd";
+
+		print "generating $man_file\n";
 		if($is_overwrite) {
 			$s = $items[$i]->parse()->string();
 		} else {
@@ -116,6 +118,7 @@ sub parse {
 			my $it2 = R::Hydrogen::Single::read_man_file($man_file);
 
 			if(defined($it2)) {
+				print "merging with existed man file\n";
 				$s = R::Hydrogen::Single::combine($it1, $it2);
 			} else {
 				$s = $it1;

@@ -20,6 +20,7 @@ sub check_synonyms {
              "reference"  => "references",
              "ref"        => "references",
              "detail"     => "details",
+             "authors"    => "author"
                 );
 	if($s{lc($_[0])}) {
 		return $s{lc($_[0])};

@@ -77,12 +77,11 @@ sub read_code_block {
 			for(; $i < scalar(@$lines_ref); $i ++) {
 				my $line = $lines_ref->[$i];
 				
-				
-				$line =~s/^\s{2}//;
+				$line =~s/^\s*$//;
 				if($line eq "") {
 					$line = "\n";
 				}
-				if($line =~/\\n$/) {
+				if($line =~/\n$/) {
 					$code_block .= $line;
 				} else {
 					$code_block .= "$line\n";

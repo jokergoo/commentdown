@@ -160,10 +160,10 @@ sub parse {
 	if($page_type eq "S4class") {
 
 		my $alias = R::Hydrogen::Section->new("alias");
-		$alias->{tex} = $self->meta("page_name");
-		push(@{$self->{section}}, $alias);
+		# $alias->{tex} = $self->meta("page_name");
+		# push(@{$self->{section}}, $alias);
 
-		$alias = R::Hydrogen::Section->new("alias");
+		# $alias = R::Hydrogen::Section->new("alias");
 		$alias->{tex} = $self->meta("page_function");
 		push(@{$self->{section}}, $alias);
 
@@ -280,7 +280,7 @@ sub get_nearest_function_info {
 		my $line = $lines_ref->[$i];
 		
 		# function should be defined as foo = function(...)
-		if($line =~/([\w.]+)\s*(=|<-)\s*function\s*\(/) {
+		if($line =~/([\S]+)\s*(=|<-)\s*function\s*\(/) {
 			# then find the closing )
             $function_name = $1;
                   
@@ -471,7 +471,8 @@ sub check_generic_function {
 			"unique" => 1,
 			"update" => 1,
 			"with" => 1,
-			"xtfrm" => 1 
+			"xtfrm" => 1,
+			"+" => 1,
 		};
 	my $f = shift;
 	foreach my $key (%$gf) {
@@ -653,5 +654,40 @@ sub combine {
 	return($s3->sort());
 }
 
+sub S4method_dispatch {
+	my $method = shift;
+	my $class = shift;
+
+	my $dispatch = R::Hydrogen::Single->new();
+	$dispatch->meta("page_name" => "$method-dispatch");
+	$dispatch->meta("page_type" => "");
+
+	my $name = R::Hydrogen::Section->new("name");
+	$name->{tex} = $self->meta("page_name");
+	push(@{$self->{section}}, $name);
+
+	my $alias = R::Hydrogen::Section->new("alias");
+	$alias->{tex} = $method;
+	push(@{$self->{section}}, $alias);
+
+	my $title = R::Hydrogen::Section->new("title");
+	$title->{tex} = "Method dispatch page for $method";
+	push(@{$self->{section}}, $title);
+
+	my $description = R::Hydrogen::Section->new("description");
+	$description->{tex} = "Method dispatch page for $method";
+	push(@{$self->{section}}, $description);
+
+	my $content = R::Hydrogen::Section->new("Methods dispatch");
+	$content->{tex} = "\\code{$method} can be dispatched on following classes:\n\n";
+	$content->{tex} .= "\\itemize{\n";
+	for(my $i = 0; $i < scalar(@$class); $i ++) {
+		$content->{tex} .= "\\code{\\link{$method,$class->[$i]-method}}, \\code{$class->[i]} class method\n";
+	}
+	$content->{tex} .= "}\n";
+	push(@{$dispatch->{section}}, $content);
+
+	return($dispatch);
+}
 
 1;

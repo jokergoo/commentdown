@@ -83,7 +83,7 @@ sub parse {
 		my $item;
 		
 		if($line =~/^#\s+[=@#*\-+$%&]{2}\s*title\s*/) {
-			$item = R::Hydrogen::Single->new()->read(\@lines, $i);
+			$item = R::Hydrogen::Single->new()->read(\@lines, $i)->parse();
 			push(@items, $item);
 		}
 	}
@@ -106,7 +106,48 @@ sub parse {
 	
 	print "\n";
 	
-	my @parsed_items;
+	my $S4method = {};
+	for(my $i = 0; $i < scalar(@items); $i ++) {
+		if($items[$i]->meta("page_type") eq "S4method") {
+			$S4method->{$items[$i]->meta("page_function")}->{$items[$i]->meta("class")} = $i;
+		}
+	}
+
+	# generate s4 method dispatch pages
+	foreach my $method (keys %$S4method) {
+
+		my $class = [keys %{$S4method->{$method}}];
+
+		if(scalar(@$class) == 1) {
+			# insert an alias which is function name to the page
+			my $i = $S4method->{$method}->{$class->[0]};
+			
+			my $alias = R::Hydrogen::Section->new("alias");
+			$alias->{tex} = $method;
+			push(@{$items[$i]->{section}}, $alias);
+			next;
+		}
+
+		my $s = R::Hydrogen::Single::S4method_dispatch($method, $class);
+		my $man_file = "$DIR/man/".filter_str($s->meta("page_name")).".rd";
+
+		print "generating $man_file\n";
+		if(!$is_overwrite) {
+			my $it2 = R::Hydrogen::Single::read_man_file($man_file);
+
+			if(defined($it2)) {
+				print "merging with existed man file\n";
+				$s = R::Hydrogen::Single::combine($s, $it2);
+			} 
+		}
+
+		open MAN, ">$man_file";
+		print MAN $s->string();
+		close MAN;
+
+		print "$man_file... done.\n\n";
+	}
+
 	for(my $i = 0; $i < scalar(@items); $i ++) {
 
 		my $s;
@@ -114,11 +155,11 @@ sub parse {
 
 		print "generating $man_file\n";
 		if($is_overwrite) {
-			$s = $items[$i]->parse();
+			$s = $items[$i];
 		} else {
-			my $it1 = $items[$i]->parse();
+			my $it1 = $items[$i];
 			my $it2 = R::Hydrogen::Single::read_man_file($man_file);
-
+			
 			if(defined($it2)) {
 				print "merging with existed man file\n";
 				$s = R::Hydrogen::Single::combine($it1, $it2);
@@ -153,42 +194,13 @@ sub parse {
 	
 	close NAMESPACE;
 	
-	my $S4method = {};
-	for(my $i = 0; $i < scalar(@items); $i ++) {
-		if($item[$i]->meta("page_type") eq "S4method") {
-			$S4method->{$item[$i]->meta("page_function")}->{$item->meta("class")} = 1;
-		}
-	}
-
-	# generate s4 method dispatch pages
-	foreach my $method (keys %$S4method) {
-		my $class = [keys %{$S4method->{$method}}];
-
-		my $s = R::Hydrogen::SIngle::S4method_dispatch($method, $class);
-		my $man_file = "$DIR/man/".filter_str($s->meta("page_name")).".rd";
-
-		print "generating $man_file\n";
-		if(!$is_overwrite) {
-			my $it2 = R::Hydrogen::Single::read_man_file($man_file);
-
-			if(defined($it2)) {
-				print "merging with existed man file\n";
-				$s = R::Hydrogen::Single::combine($s, $it2);
-			} 
-		}
-
-		open MAN, ">$man_file";
-		print MAN $s->string();
-		close MAN;
-
-		print "$man_file... done.\n\n";
-	}
 }
 
 sub filter_str {
 	my $str = shift;
 
-	$str =~s/+/add/g;
+	$str =~s/\+/add/g;
+	#$str =~s/["']//g;
 
 	return $str;
 }

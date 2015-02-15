@@ -160,19 +160,19 @@ sub parse {
 	if($page_type eq "S4class") {
 
 		my $alias = R::Hydrogen::Section->new("alias");
-		# $alias->{tex} = $self->meta("page_name");
-		# push(@{$self->{section}}, $alias);
+		$alias->{tex} = $self->meta("page_name");
+		push(@{$self->{section}}, $alias);
 
-		# $alias = R::Hydrogen::Section->new("alias");
+		$alias = R::Hydrogen::Section->new("alias");
 		$alias->{tex} = $self->meta("page_function");
 		push(@{$self->{section}}, $alias);
 
 	} elsif($page_type eq "S4method") {
 		my $alias = R::Hydrogen::Section->new("alias");
-		$alias->{tex} = $self->meta("page_function");
-		push(@{$self->{section}}, $alias);
+		# $alias->{tex} = $self->meta("page_function");
+		# push(@{$self->{section}}, $alias);
 
-		$alias = R::Hydrogen::Section->new("alias");
+		# $alias = R::Hydrogen::Section->new("alias");
 		$alias->{tex} = $self->meta("page_function").",".$self->meta("class")."-method";
 		push(@{$self->{section}}, $alias);
 
@@ -197,6 +197,14 @@ sub parse {
 	
 
 	# usage
+
+	# my $class = $self->meta("class");
+	# if($page_type eq "S4method" && $self->meta("page_function") eq "initialize") {
+	# 	my $usage = $self->meta("usage");
+	# 	$usage =~s/^\\S4method\{initialize\}\{$class\}\(\.Object[,\s]*/$class(/s;
+	# 	$self->meta("usage" => $self->meta("usage")."\n\n#Constructor for $class class\n$usage\n");
+	# }
+
 	my $usage = R::Hydrogen::Section->new("usage");
 
 	if(!($page_type eq "package" ||
@@ -212,6 +220,7 @@ sub parse {
 		$arguments->{tex} =~s/\}\s*$//s;
 	}
 
+	
 	return $self->sort();
 }
 
@@ -302,6 +311,7 @@ sub get_nearest_function_info {
                     $function_args .= " " x (length($function_name)+3) . $line . "\n";
                 }
             }
+            $function_name =~s/["']//g;
 			$function_args = re_format_function_args($function_args);
 			if(my ($g, $c) = check_generic_function($function_name)) {
 				return ($function_name, "\\method{$g}{$c}($function_args)", "S3method", $c);
@@ -476,7 +486,11 @@ sub check_generic_function {
 		};
 	my $f = shift;
 	foreach my $key (%$gf) {
-		if($f =~/^$key\.(\S+)$/) {
+		my $key2 = $key;
+		if($key eq "+") {
+			$key2 = "\\$key";
+		}
+		if($f =~/^$key2\.(\S+)$/) {
 			return ($key, $1);
 		}
 	}
@@ -663,26 +677,26 @@ sub S4method_dispatch {
 	$dispatch->meta("page_type" => "");
 
 	my $name = R::Hydrogen::Section->new("name");
-	$name->{tex} = $self->meta("page_name");
-	push(@{$self->{section}}, $name);
+	$name->{tex} = $dispatch->meta("page_name");
+	push(@{$dispatch->{section}}, $name);
 
 	my $alias = R::Hydrogen::Section->new("alias");
 	$alias->{tex} = $method;
-	push(@{$self->{section}}, $alias);
+	push(@{$dispatch->{section}}, $alias);
 
 	my $title = R::Hydrogen::Section->new("title");
 	$title->{tex} = "Method dispatch page for $method";
-	push(@{$self->{section}}, $title);
+	push(@{$dispatch->{section}}, $title);
 
 	my $description = R::Hydrogen::Section->new("description");
 	$description->{tex} = "Method dispatch page for $method";
-	push(@{$self->{section}}, $description);
+	push(@{$dispatch->{section}}, $description);
 
-	my $content = R::Hydrogen::Section->new("Methods dispatch");
+	my $content = R::Hydrogen::Section->new("Dispatch");
 	$content->{tex} = "\\code{$method} can be dispatched on following classes:\n\n";
 	$content->{tex} .= "\\itemize{\n";
 	for(my $i = 0; $i < scalar(@$class); $i ++) {
-		$content->{tex} .= "\\code{\\link{$method,$class->[$i]-method}}, \\code{$class->[i]} class method\n";
+		$content->{tex} .= "\\item \\code{\\link{$method,$class->[$i]-method}}, \\code{$class->[$i]} class method\n";
 	}
 	$content->{tex} .= "}\n";
 	push(@{$dispatch->{section}}, $content);

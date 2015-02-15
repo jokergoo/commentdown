@@ -1,5 +1,5 @@
 
-## the Perl module
+## Translate comment to documentations in R
 
 Comments are marked as Markdown-style.
 

@@ -193,7 +193,15 @@ sub parse {
 	print NAMESPACE "\n";
 	
 	close NAMESPACE;
-	
+
+	## S4 generic function
+	if(scalar(%$S4method)) {
+		open GENERIC, ">$DIR/R/00_S4_generic_methods.R";
+		foreach my $method (keys %$S4method) {
+			print GENERIC generate_generic_method($method);
+		}
+		close GENERIC;
+	}
 }
 
 sub filter_str {
@@ -203,6 +211,24 @@ sub filter_str {
 	#$str =~s/["']//g;
 
 	return $str;
+}
+
+
+sub generate_generic_method {
+	my $method = shift;
+
+	my $code = "
+if(!isGeneric('$method')) {
+    if(is.function('$method')) {
+        fun = $method
+    } else {
+        fun = function(object, ...) standardGeneric('$method', ...)
+    }
+    setGeneric('$method', fun)
+}
+
+";
+	return $code;
 }
 
 1;

@@ -601,6 +601,7 @@ sub read_man_file {
 			$s->{tex} = $a[$i + 2];
 		} else {
 			$a[$i + 1] =~s/^\{|\}$//mg;
+			$a[$i + 1] = lc($a[$i + 1]);
 			$s = R::Hydrogen::Section->new($a[$i + 1]);
 			$s->{tex} = $a[$i + 2];
 		}
@@ -689,10 +690,10 @@ sub S4method_dispatch {
 	push(@{$dispatch->{section}}, $title);
 
 	my $description = R::Hydrogen::Section->new("description");
-	$description->{tex} = "Method dispatch page for $method";
+	$description->{tex} = "Method dispatch page for \\code{$method}.";
 	push(@{$dispatch->{section}}, $description);
 
-	my $content = R::Hydrogen::Section->new("Dispatch");
+	my $content = R::Hydrogen::Section->new("dispatch");
 	$content->{tex} = "\\code{$method} can be dispatched on following classes:\n\n";
 	$content->{tex} .= "\\itemize{\n";
 	for(my $i = 0; $i < scalar(@$class); $i ++) {

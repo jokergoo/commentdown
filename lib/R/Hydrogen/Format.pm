@@ -177,8 +177,8 @@ sub trans_url {
 
 sub trans_font {
 	my $text = shift;
-	$text =~s/\*\*(.*?)\*\*/\\textbf{$1}/g;
-	$text =~s/__(.*?)__/\\textbf{$1}/g;
+	$text =~s/\*\*(.*?)\*\*/\\bold{$1}/g;
+	$text =~s/__(.*?)__/\\bold{$1}/g;
 	$text =~s/(?!\*)\*(.*?)\*(?<!\*)/\\emph{$1}/g;
 	$text =~s/(?!_)_(.*?)_(?<!_)/\\emph{$1}/g;
 

@@ -173,6 +173,8 @@ sub parse {
 		close MAN;
 
 		print "$man_file... done.\n\n";
+
+		# if($items[$i]->meta("page_name") eq "Heatmap-class") { exit; }
 	}
 
 

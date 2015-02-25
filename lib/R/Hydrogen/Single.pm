@@ -697,7 +697,7 @@ sub S4method_dispatch {
 	$content->{tex} = "\\code{$method} can be dispatched on following classes:\n\n";
 	$content->{tex} .= "\\itemize{\n";
 	for(my $i = 0; $i < scalar(@$class); $i ++) {
-		$content->{tex} .= "\\item \\code{\\link{$method,$class->[$i]-method}}, \\code{$class->[$i]} class method\n";
+		$content->{tex} .= "\\item \\code{\\link{$method,$class->[$i]-method}}, \\code{\\link{$class->[$i]}} class method\n";
 	}
 	$content->{tex} .= "}\n";
 	push(@{$dispatch->{section}}, $content);

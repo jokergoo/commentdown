@@ -546,7 +546,7 @@ sub export_str {
 
 	my $page_type = $self->meta("page_type");
 	if($page_type eq "S4class") {
-		"exportClasses(".$self->meta("class").")";
+		"exportClasses(".$self->meta("class").")\nexport(".$self->meta("class").")";
 	} elsif($page_type eq "S4method") {
 		"exportMethods(".$self->meta("page_function").")";
 	} elsif(!($page_type eq "data" || $page_type eq "package")) {

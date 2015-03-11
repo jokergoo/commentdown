@@ -163,9 +163,9 @@ sub parse {
 		$alias->{tex} = $self->meta("page_name");
 		push(@{$self->{section}}, $alias);
 
-		$alias = R::Hydrogen::Section->new("alias");
-		$alias->{tex} = $self->meta("page_function");
-		push(@{$self->{section}}, $alias);
+		# $alias = R::Hydrogen::Section->new("alias");
+		# $alias->{tex} = $self->meta("page_function");
+		# push(@{$self->{section}}, $alias);
 
 	} elsif($page_type eq "S4method") {
 		my $alias = R::Hydrogen::Section->new("alias");

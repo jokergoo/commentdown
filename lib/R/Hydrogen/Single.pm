@@ -548,6 +548,9 @@ sub export_str {
 	if($page_type eq "S4class") {
 		"exportClasses(".$self->meta("class").")\nexport(".$self->meta("class").")";
 	} elsif($page_type eq "S4method") {
+		if($self->meta("page_function") eq "show" || $self->meta("page_function") eq "initialize") {
+			return("");
+		} 
 		"exportMethods(".$self->meta("page_function").")";
 	} elsif(!($page_type eq "data" || $page_type eq "package")) {
 		"export(".$self->meta("page_function").")";
@@ -697,7 +700,7 @@ sub S4method_dispatch {
 	$content->{tex} = "\\code{$method} can be dispatched on following classes:\n\n";
 	$content->{tex} .= "\\itemize{\n";
 	for(my $i = 0; $i < scalar(@$class); $i ++) {
-		$content->{tex} .= "\\item \\code{\\link{$method,$class->[$i]-method}}, \\code{\\link{$class->[$i]}} class method\n";
+		$content->{tex} .= "\\item \\code{\\link{$method,$class->[$i]-method}}, \\code{\\link{$class->[$i]-class}} class method\n";
 	}
 	$content->{tex} .= "}\n";
 	push(@{$dispatch->{section}}, $content);

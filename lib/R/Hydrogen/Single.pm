@@ -20,7 +20,8 @@ sub check_synonyms {
              "reference"  => "references",
              "ref"        => "references",
              "detail"     => "details",
-             "authors"    => "author"
+             "authors"    => "author",
+             "example"    => "examples"
                 );
 	if($s{lc($_[0])}) {
 		return $s{lc($_[0])};
@@ -80,7 +81,7 @@ sub read {
 			} else {
 				$line =~s/^#\s?//s;  # leading space
 				$line =~s/^\s+$//g;  # tracing space
-				#$line .= "\n";
+				#$line .= "\n" if($line ne "");
 				$current_section->add_line($line);
 			}
 		} elsif($is_function) {

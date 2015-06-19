@@ -97,7 +97,7 @@ sub format {
 	foreach my $k (sort keys %{$self->{tree}}) {
 		my $v = $self->{tree}->{$k};
 		if($k =~/_paragraph/) {
-			$str .= inline_format($v)."\n\n";
+			$str .= inline_format($v)."\n";
 		} elsif($k =~/_named_item/) {
 			$str .= "\\describe{\n";
 			for(my $i = 0; $i < scalar(@{$v->{name}}); $i ++) {
@@ -147,9 +147,9 @@ sub string {
 	if($self->{name} eq "name" || $self->{name} eq "alias" || $self->{name} eq "docType") {
 		"\\$self->{name}"."{$self->{tex}}\n";
 	} elsif(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
-		"\\$self->{name}"."{\n$self->{tex}\n}\n";
+		"\\$self->{name}"."{\n$self->{tex}}\n";
 	} else {
-		"\\section{".ucfirst($self->{name})."}{\n$self->{tex}\n}\n";
+		"\\section{".ucfirst($self->{name})."}{\n$self->{tex}}\n";
 	}
 }
 

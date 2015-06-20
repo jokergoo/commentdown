@@ -1,5 +1,5 @@
 
-## Translate comment to documentations in R
+## Translate comments to documentations in R
 
 Comments are marked as Markdown-style.
 

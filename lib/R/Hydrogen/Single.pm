@@ -706,6 +706,11 @@ sub S4method_dispatch {
 	$content->{tex} .= "}\n";
 	push(@{$dispatch->{section}}, $content);
 
+	my $example = R::Hydrogen::Section->new("example");
+	$example->{tex} = "# no example\nNULL\n";
+	push(@{$dispatch->{section}}, $example);
+
+
 	return($dispatch);
 }
 

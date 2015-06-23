@@ -11,7 +11,8 @@ sub new {
 	my $self = {name => shift(@_),
 	            lines => [],
 	            tree => {},
-	            tex => ""};
+	            tex => "",
+	            is_example => 0,};
 
 	bless $self, $class;
 	return $self;
@@ -70,18 +71,23 @@ sub convert_to_tree {
 		}
 		
 		my $h;
-		if($lines_ref->[$i] =~/^-\s/) {
-			($h, $i) = read_item($lines_ref, $i);
-			$tree->{shift(@$dl)."_item"} = $h;
-		} elsif($lines_ref->[$i] =~/^-\S+\s/) {
-			($h, $i) = read_named_item($lines_ref, $i);
-			$tree->{shift(@$dl)."_named_item"} = $h;
-		} elsif($lines_ref->[$i] =~/^\s+\S/ and is_code_block($lines_ref, $i)) {
-			($h, $i) = read_code_block($lines_ref, $i);
-			$tree->{shift(@$dl)."_code_block"} = $h;
-		} elsif($lines_ref->[$i] =~/\S/) {
+		if($self->{is_example}) {
 			($h, $i) = read_paragraph($lines_ref, $i);
 			$tree->{shift(@$dl)."_paragraph"} = $h;
+		} else {
+			if($lines_ref->[$i] =~/^-\s/) {
+				($h, $i) = read_item($lines_ref, $i);
+				$tree->{shift(@$dl)."_item"} = $h;
+			} elsif($lines_ref->[$i] =~/^-\S+\s/) {
+				($h, $i) = read_named_item($lines_ref, $i);
+				$tree->{shift(@$dl)."_named_item"} = $h;
+			} elsif($lines_ref->[$i] =~/^\s+\S/ and is_code_block($lines_ref, $i)) {
+				($h, $i) = read_code_block($lines_ref, $i);
+				$tree->{shift(@$dl)."_code_block"} = $h;
+			} elsif($lines_ref->[$i] =~/\S/) {
+				($h, $i) = read_paragraph($lines_ref, $i);
+				$tree->{shift(@$dl)."_paragraph"} = $h;
+			}
 		}
 	}
 
@@ -96,7 +102,9 @@ sub format {
 	my $str;
 	foreach my $k (sort keys %{$self->{tree}}) {
 		my $v = $self->{tree}->{$k};
-		if($k =~/_paragraph/) {
+		if($self->{is_example}) {
+			$str .= "$v\n";
+		} elsif($k =~/_paragraph/) {
 			$str .= inline_format($v)."\n";
 		} elsif($k =~/_named_item/) {
 			$str .= "\\describe{\n";

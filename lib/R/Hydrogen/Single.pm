@@ -484,11 +484,12 @@ sub check_generic_function {
 			"with" => 1,
 			"xtfrm" => 1,
 			"+" => 1,
+			"[" => 1,
 		};
 	my $f = shift;
 	foreach my $key (%$gf) {
 		my $key2 = $key;
-		if($key eq "+") {
+		if($key =~/^[+\[]$/) {
 			$key2 = "\\$key";
 		}
 		if($f =~/^$key2\.(\S+)$/) {
@@ -554,7 +555,11 @@ sub export_str {
 		} 
 		"exportMethods(".$self->meta("page_function").")";
 	} elsif(!($page_type eq "data" || $page_type eq "package")) {
-		"export(".$self->meta("page_function").")";
+		if($self->meta("page_function") =~/^\W/) {
+			"export('".$self->meta("page_function")."')";
+		} else {
+			"export(".$self->meta("page_function").")";
+		}
 	} else {
 		"";
 	}

@@ -211,7 +211,7 @@ sub filter_str {
 	my $str = shift;
 
 	$str =~s/\+/add/g;
-	#$str =~s/["']//g;
+	$str =~s/\[/Extract/g;
 
 	return $str;
 }

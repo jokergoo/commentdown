@@ -6,6 +6,10 @@ package R::Hydrogen::Align;
 use strict;
 use Data::Dumper;
 
+
+# input are two character vectors
+# output are two aligned character vectors, if there is a gap, a "" is put 
+# in corresponding place
 sub align {
 	my $array1 = shift;
 	my $array2 = shift;

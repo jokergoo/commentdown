@@ -76,6 +76,9 @@ sub read {
 				$current_section_name = $1;
 				$current_section_name = check_synonyms($current_section_name);
 				$current_section = R::Hydrogen::Section->new($current_section_name);
+				if($current_section_name eq "examples") {
+					$current_section->{is_example} = 1;
+				}
 
 				push(@$sections, $current_section);
 			} else {
@@ -603,7 +606,7 @@ sub read_man_file {
 	for(my $i = 0; $i < scalar(@a); $i += 3) {
 		
 		$a[$i + 2] =~s/^\{|\}$//g;
-		$a[$i + 2] =~s/^\s*|\s*$//gs; # removing leading/tracing white space characters
+		#$a[$i + 2] =~s/^\s*|\s*$//gs; # removing leading/tracing white space characters
 		
 		if($a[$i+1] eq "") {
 			$s = R::Hydrogen::Section->new($a[$i]);

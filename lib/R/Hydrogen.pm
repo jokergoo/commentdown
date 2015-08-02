@@ -10,7 +10,12 @@ our $VERSION = 0.4;
 
 our $DIR = ".";
 
-# entrance
+# the main function
+# input is the path of the R package, like /path/to/circlize
+#
+# settings:
+# -overwrite: directly overwrite the rd file if it exists
+#
 sub hydrogenize {
     my $class = shift;
     my $dir = shift;
@@ -65,7 +70,11 @@ sub hydrogenize {
     print "Done, you documentations are in $DIR/man folder.\n\n";
 }
 
-# parse comments and write into files
+# second step:
+#   aftering merging all R scripts into one script
+#   1. find comment for every function
+#   2. find section in every comment
+#   3. parse the comment as a tree
 sub parse {
 	open my $R_FH, $_[0] or die $@;
 	my $is_overwrite = $_[1];
@@ -75,7 +84,7 @@ sub parse {
 	# one the first level of `item` hash, there are two keys
 	# -section is a reference of hash in which each key corresponds to each section
 	# -meta is a reference of hash which contains meta information such as the type of the page
-	my @items;
+	my @items;  # items are functions/classes/...
 	my $i_item = 0;
     for(my $i = 0; $i < scalar(@lines); $i ++) {
 

@@ -617,7 +617,7 @@ sub read_man_file {
 			$s = R::Hydrogen::Section->new($a[$i + 1]);
 			$s->{tex} = $a[$i + 2];
 		}
-		
+		$s->{tex} =~s/^\s+|\s+$//s;
 		push(@{$self->{section}}, $s);
 	}
 	

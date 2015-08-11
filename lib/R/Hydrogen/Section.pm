@@ -73,19 +73,24 @@ sub convert_to_tree {
 		my $h;
 		if($self->{is_example}) {
 			($h, $i) = read_paragraph($lines_ref, $i);
+			$h =~s/^\s+|\s+$//s;
 			$tree->{shift(@$dl)."_paragraph"} = $h;
 		} else {
 			if($lines_ref->[$i] =~/^-\s/) {
 				($h, $i) = read_item($lines_ref, $i);
+				$h =~s/^\s+|\s+$//s;
 				$tree->{shift(@$dl)."_item"} = $h;
 			} elsif($lines_ref->[$i] =~/^-\S+\s/) {
 				($h, $i) = read_named_item($lines_ref, $i);
+				$h =~s/^\s+|\s+$//s;
 				$tree->{shift(@$dl)."_named_item"} = $h;
 			} elsif($lines_ref->[$i] =~/^\s+\S/ and is_code_block($lines_ref, $i)) {
 				($h, $i) = read_code_block($lines_ref, $i);
+				$h =~s/^\s+|\s+$//s;
 				$tree->{shift(@$dl)."_code_block"} = $h;
 			} elsif($lines_ref->[$i] =~/\S/) {
 				($h, $i) = read_paragraph($lines_ref, $i);
+				$h =~s/^\s+|\s+$//s;
 				$tree->{shift(@$dl)."_paragraph"} = $h;
 			}
 		}

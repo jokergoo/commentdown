@@ -132,6 +132,8 @@ sub format {
 		}
 	}
 
+	$str =~s/^\s+|\s+$//sg;
+
 	$self->{tex} = $str;
 	return($self);
 }
@@ -160,7 +162,7 @@ sub string {
 	if($self->{name} eq "name" || $self->{name} eq "alias" || $self->{name} eq "docType") {
 		"\\$self->{name}"."{$self->{tex}}\n";
 	} elsif(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
-		"\\$self->{name}"."{\n$self->{tex}}\n";
+		"\\$self->{name}"."{\n$self->{tex}\n}\n";
 	} else {
 		"\\section{".ucfirst($self->{name})."}{\n$self->{tex}}\n";
 	}

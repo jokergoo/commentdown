@@ -110,7 +110,7 @@ sub format {
 		if($self->{is_example}) {
 			$str .= "$v\n";
 		} elsif($k =~/_paragraph/) {
-			$str .= inline_format($v)."\n";
+			$str .= inline_format($v)."\n\n";
 		} elsif($k =~/_named_item/) {
 			$str .= "\\describe{\n";
 			for(my $i = 0; $i < scalar(@{$v->{name}}); $i ++) {

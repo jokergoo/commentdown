@@ -223,7 +223,6 @@ sub parse {
 		$arguments->{tex} =~s/\\describe\{//s;
 		$arguments->{tex} =~s/\}\s*$//s;
 	}
-
 	
 	return $self->sort();
 }
@@ -656,16 +655,16 @@ sub combine {
 				$alias_name->{$s1_alias_name} = 1;
 			}
 		}
-		if($align2->[$i] eq "alias") {
-			my $s2_alias_name = $s2_copy->get_section($align2->[$i])->{"tex"};
-			if(! defined($alias_name->{$s2_alias_name}) ) {
-				push(@$alias, $s2_copy->get_section($align2->[$i]));
-				$s2_copy->pop_section($align2->[$i]);
-				$alias_name->{$s2_alias_name} = 1;
-			} else {
-				$s2_copy->pop_section($align2->[$i]);
-			}
-		}
+		# if($align2->[$i] eq "alias") {
+		# 	my $s2_alias_name = $s2_copy->get_section($align2->[$i])->{"tex"};
+		# 	if(! defined($alias_name->{$s2_alias_name}) ) {
+		# 		push(@$alias, $s2_copy->get_section($align2->[$i]));
+		# 		$s2_copy->pop_section($align2->[$i]);
+		# 		$alias_name->{$s2_alias_name} = 1;
+		# 	} else {
+		# 		$s2_copy->pop_section($align2->[$i]);
+		# 	}
+		# }
 		if($align1->[$i] eq "alias" || $align2->[$i] eq "alias") {
 			next;
 		}

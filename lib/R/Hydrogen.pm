@@ -168,7 +168,7 @@ sub parse {
 		} else {
 			my $it1 = $items[$i];
 			my $it2 = R::Hydrogen::Single::read_man_file($man_file);
-			
+
 			if(defined($it2)) {
 				print "merging with existed man file\n";
 				$s = R::Hydrogen::Single::combine($it1, $it2);

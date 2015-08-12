@@ -73,24 +73,24 @@ sub convert_to_tree {
 		my $h;
 		if($self->{is_example}) {
 			($h, $i) = read_paragraph($lines_ref, $i);
-			$h =~s/^\s+|\s+$//s;
+			$h =~s/^\s+|\s+$//sg;
 			$tree->{shift(@$dl)."_paragraph"} = $h;
 		} else {
 			if($lines_ref->[$i] =~/^-\s/) {
 				($h, $i) = read_item($lines_ref, $i);
-				$h =~s/^\s+|\s+$//s;
+				$h =~s/^\s+|\s+$//sg;
 				$tree->{shift(@$dl)."_item"} = $h;
 			} elsif($lines_ref->[$i] =~/^-\S+\s/) {
 				($h, $i) = read_named_item($lines_ref, $i);
-				$h =~s/^\s+|\s+$//s;
+				$h =~s/^\s+|\s+$//sg;
 				$tree->{shift(@$dl)."_named_item"} = $h;
 			} elsif($lines_ref->[$i] =~/^\s+\S/ and is_code_block($lines_ref, $i)) {
 				($h, $i) = read_code_block($lines_ref, $i);
-				$h =~s/^\s+|\s+$//s;
+				$h =~s/^\s+|\s+$//sg;
 				$tree->{shift(@$dl)."_code_block"} = $h;
 			} elsif($lines_ref->[$i] =~/\S/) {
 				($h, $i) = read_paragraph($lines_ref, $i);
-				$h =~s/^\s+|\s+$//s;
+				$h =~s/^\s+|\s+$//sg;
 				$tree->{shift(@$dl)."_paragraph"} = $h;
 			}
 		}
@@ -160,6 +160,7 @@ sub string {
 	my $self = shift;
 
 	if($self->{name} eq "name" || $self->{name} eq "alias" || $self->{name} eq "docType") {
+		$self->{tex} =~s/^\s+|\s+$//sg;
 		"\\$self->{name}"."{$self->{tex}}\n";
 	} elsif(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
 		"\\$self->{name}"."{\n$self->{tex}\n}\n";

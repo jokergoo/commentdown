@@ -86,7 +86,7 @@ sub convert_to_tree {
 				$tree->{shift(@$dl)."_named_item"} = $h;
 			} elsif($lines_ref->[$i] =~/^\s+\S/ and is_code_block($lines_ref, $i)) {
 				($h, $i) = read_code_block($lines_ref, $i);
-				$h =~s/^\s+|\s+$//sg;
+				$h =~s/\s+$//sg;
 				$tree->{shift(@$dl)."_code_block"} = $h;
 			} elsif($lines_ref->[$i] =~/\S/) {
 				($h, $i) = read_paragraph($lines_ref, $i);

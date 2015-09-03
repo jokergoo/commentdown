@@ -487,11 +487,13 @@ sub check_generic_function {
 			"xtfrm" => 1,
 			"+" => 1,
 			"[" => 1,
+			"\$" => 1,
+			"\$<-" => 1,
 		};
 	my $f = shift;
 	foreach my $key (%$gf) {
 		my $key2 = $key;
-		if($key =~/^[+\[]$/) {
+		if($key eq "+" or $key eq "[" or $key eq '$' or $key eq '$<-') {
 			$key2 = "\\$key";
 		}
 		if($f =~/^$key2\.(\S+)$/) {

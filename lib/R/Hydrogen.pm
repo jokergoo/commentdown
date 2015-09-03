@@ -179,6 +179,9 @@ sub parse {
 
 		open MAN, ">$man_file";
 		print MAN $s->string();
+		if(!$s->has_section("examples")) {
+			print MAN "\\examples{\n# There is no example\nNULL\n}\n";
+		}
 		close MAN;
 
 		print "$man_file... done.\n\n";
@@ -221,6 +224,8 @@ sub filter_str {
 
 	$str =~s/\+/add/g;
 	$str =~s/\[/Extract/g;
+	$str =~s/\$<-/Assign/g;
+	$str =~s/\$/Subset/g;
 
 	return $str;
 }

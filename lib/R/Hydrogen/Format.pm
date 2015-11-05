@@ -39,7 +39,7 @@ sub read_item {
 			return ($item, $i);
 		} else {
 			$line =~s/^\s+//;
-			$item->[$#$item] .= "$line";
+			$item->[$#$item] .= " $line";
 		}
 	}
 }
@@ -61,7 +61,7 @@ sub read_named_item {
 			return ($item, $i);
 		} else {
 			$line =~s/^\s+//;
-			$item->{value}->[$#{$item->{value}}] .= "$line";
+			$item->{value}->[$#{$item->{value}}] .= " $line";
 		}
 	}
 }
@@ -102,7 +102,7 @@ sub read_paragraph {
 	for(my $i = $index; $i < scalar(@$lines_ref); $i ++) {
 		my $line = $lines_ref->[$i];
 		#chomp $line;
-		$paragraph .= " $line";
+		$paragraph .= "$line";
 		if($i == $#$lines_ref or $lines_ref->[$i] =~/^\s*$/) {
 			return ($paragraph, $i);
 		}

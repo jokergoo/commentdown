@@ -108,7 +108,7 @@ sub format {
 	foreach my $k (sort keys %{$self->{tree}}) {
 		my $v = $self->{tree}->{$k};
 		if($self->{is_example}) {
-			$str .= "$v\n";
+			$str .= "$v\n\n";
 		} elsif($k =~/_paragraph/) {
 			$str .= inline_format($v)."\n\n";
 		} elsif($k =~/_named_item/) {

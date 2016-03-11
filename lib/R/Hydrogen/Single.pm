@@ -317,7 +317,12 @@ sub get_nearest_function_info {
             $function_name =~s/["']//g;
 			$function_args = re_format_function_args($function_args);
 			if(my ($g, $c) = check_generic_function($function_name)) {
-				return ($function_name, "\\method{$g}{$c}($function_args)", "S3method", $c);
+				if($g eq '$<-') {
+					$function_args =~s/,\s*value//;
+					return ($function_name, "\\method{\$}{$c}($function_args) <- value", "S3method", $c);
+				} else {
+					return ($function_name, "\\method{$g}{$c}($function_args)", "S3method", $c);
+				}
 			} else {
 				return ($function_name, "$function_name($function_args)", "");
 			}

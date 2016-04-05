@@ -373,6 +373,7 @@ sub re_format_function_args {
 	for(my $i = 0; $i < scalar(@str); $i ++) {
 		$str[$i] =~s/^\s+//;
 		$str[$i] =~s/\s+$//;
+		$str[$i] =~s/%/\\%/g;
 		if($i > 0) {
 			$str[$i] = "    $str[$i]";
 		}

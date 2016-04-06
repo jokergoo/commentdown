@@ -106,7 +106,7 @@ sub parse {
 		print "read already-existed import* directives.\n";
 		open NAMESPACE, "$DIR/NAMESPACE";
 		while(my $line = <NAMESPACE>) {
-			if($line =~/^import/i) {
+			if($line !~/^export/i) {
 				push(@import, $line);
 			}
 		}

@@ -324,7 +324,11 @@ sub get_nearest_function_info {
 					return ($function_name, "\\method{$g}{$c}($function_args)", "S3method", $c);
 				}
 			} else {
-				return ($function_name, "$function_name($function_args)", "");
+				if($function_name =~/^(.*)<-$/) {
+					return ($function_name, "$1(x) <- value", "");
+				} else {
+					return ($function_name, "$function_name($function_args)", "");
+				}
 			}
 		} elsif($line =~/setMethod\(f\s*=\s*['"](.*?)['"]/) {  # s4method
 			$function_name = $1;
@@ -565,10 +569,10 @@ sub export_str {
 		} 
 		"exportMethods(".$self->meta("page_function").")";
 	} elsif(!($page_type eq "data" || $page_type eq "package")) {
-		if($self->meta("page_function") =~/^\W/) {
-			"export('".$self->meta("page_function")."')";
-		} else {
+		if($self->meta("page_function") =~/^\w*$/) {
 			"export(".$self->meta("page_function").")";
+		} else {
+			"export('".$self->meta("page_function")."')";
 		}
 	} else {
 		"";

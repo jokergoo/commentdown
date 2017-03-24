@@ -107,7 +107,9 @@ sub parse {
 		open NAMESPACE, "$DIR/NAMESPACE";
 		while(my $line = <NAMESPACE>) {
 			if($line !~/^export/i) {
-				push(@import, $line);
+				if($line !~/^\s*$/) {
+					push(@import, $line);
+				}
 			}
 		}
 		close(NAMESPACE);
@@ -198,12 +200,12 @@ sub parse {
 		}
 	}
 	open NAMESPACE, ">$DIR/NAMESPACE";
-	foreach my $e (keys %$export) {
+	foreach my $e (sort keys %$export) {
 		print NAMESPACE "$e\n";
 	}
 	
 	print NAMESPACE "\n";
-	print NAMESPACE join "", @import;
+	print NAMESPACE join "", sort @import;
 	print NAMESPACE "\n";
 	
 	close NAMESPACE;
@@ -225,6 +227,7 @@ sub filter_str {
 	$str =~s/\+/add/g;
 	$str =~s/\[/Extract/g;
 	$str =~s/\$<-/Assign/g;
+	$str =~s/<-/Assign/g;
 	$str =~s/\$/Subset/g;
 
 	return $str;

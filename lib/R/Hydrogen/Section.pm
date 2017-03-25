@@ -114,7 +114,7 @@ sub format {
 		} elsif($k =~/_named_item/) {
 			$str .= "\\describe{\n";
 			for(my $i = 0; $i < scalar(@{$v->{name}}); $i ++) {
-				$str .= "  \\item{$v->{name}->[$i]}{".inline_format($v->{value}->[$i])."}\n";
+				$str .= "  \\item{".inline_format($v->{name}->[$i])."}{".inline_format($v->{value}->[$i])."}\n";
 			}
 			$str .= "}\n\n";
 		} elsif($k =~/_item/) {

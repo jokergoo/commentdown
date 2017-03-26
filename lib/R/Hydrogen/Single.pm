@@ -60,6 +60,10 @@ sub read {
 		$single->meta(page_name => $1);
 		$single->meta(page_type => "data");
 		$single->meta(usage => "data($1)");
+	} elsif($lines_ref->[$index] =~/^#\s+[=@#*\-+$%&]{2}\s*title\s*\(\s*variable:\s*(\S+)\s*\)/) {  # data page
+		$single->meta(page_name => $1);
+		$single->meta(page_type => "data");
+		$single->meta(usage => "$1");
 	} elsif($lines_ref->[$index] =~/^#\s+[=@#*\-+$%&]{2}\s*title\s*\(\s*package:\s*(\S+)\s*\)/) {  # package page
 		$single->meta(page_name => "$1-package");
 		$single->meta(page_type => "package");
@@ -574,6 +578,8 @@ sub export_str {
 		} else {
 			"export('".$self->meta("page_function")."')";
 		}
+	} elsif($page_type eq "data" && $self->meta("usage")!~/^data\(./) {
+		"export(".$self->meta("usage").")";
 	} else {
 		"";
 	}

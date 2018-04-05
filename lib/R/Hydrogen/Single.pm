@@ -578,7 +578,7 @@ sub export_str {
 		my $generic = $self->meta("page_function");
 		my $class = $self->meta('class');
 		$generic =~s/\.$class//;
-		"S3method(\"".$generic."\", ".$self->meta("class").")"
+		"S3method(\"".$generic."\", ".$self->meta("class").")\n"."export(\"".$generic.".".$self->meta("class"). "\")";
 	} elsif(!($page_type eq "data" || $page_type eq "package")) {
 		if($self->meta("page_function") =~/^\w*$/) {
 			"export(".$self->meta("page_function").")";

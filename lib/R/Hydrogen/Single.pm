@@ -476,6 +476,8 @@ sub check_generic_function {
 			"qr" => 1,
 			"quantile" => 1,
 			"range" => 1,
+			"rbind" => 1,
+			"cbind" => 1,
 			"residuals" => 1,
 			"rev" => 1,
 			"row.names" => 1,
@@ -572,6 +574,11 @@ sub export_str {
 			return("");
 		} 
 		"exportMethods(".$self->meta("page_function").")";
+	} elsif($page_type eq "S3method") {
+		my $generic = $self->meta("page_function");
+		my $class = $self->meta('class');
+		$generic =~s/\.$class//;
+		"S3method(\"".$generic."\", ".$self->meta("class").")"
 	} elsif(!($page_type eq "data" || $page_type eq "package")) {
 		if($self->meta("page_function") =~/^\w*$/) {
 			"export(".$self->meta("page_function").")";

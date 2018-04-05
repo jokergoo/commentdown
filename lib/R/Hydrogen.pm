@@ -106,7 +106,7 @@ sub parse {
 		print "read already-existed import* directives.\n";
 		open NAMESPACE, "$DIR/NAMESPACE";
 		while(my $line = <NAMESPACE>) {
-			if($line !~/^export/i) {
+			if($line !~/^(export|S3method)/i) {
 				if($line !~/^\s*$/) {
 					push(@import, $line);
 				}

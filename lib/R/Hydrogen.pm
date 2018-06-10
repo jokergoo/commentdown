@@ -229,6 +229,7 @@ sub filter_str {
 	$str =~s/\$<-/Assign/g;
 	$str =~s/<-/Assign/g;
 	$str =~s/\$/Subset/g;
+	$str =~s/^\./Dot./g;
 
 	return $str;
 }

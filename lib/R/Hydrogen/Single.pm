@@ -324,6 +324,12 @@ sub get_nearest_function_info {
 				if($g eq '$<-') {
 					$function_args =~s/,\s*value//;
 					return ($function_name, "\\method{\$}{$c}($function_args) <- value", "S3method", $c);
+				} elsif($g eq '[<-') {
+					$function_args =~s/,\s*value//;
+					return ($function_name, "\\method{\[}{$c}($function_args) <- value", "S3method", $c);
+				} elsif($g eq '[[<-') {
+					$function_args =~s/,\s*value//;
+					return ($function_name, "\\method{\[\[}{$c}($function_args) <- value", "S3method", $c);
 				} else {
 					return ($function_name, "\\method{$g}{$c}($function_args)", "S3method", $c);
 				}
@@ -419,6 +425,7 @@ sub check_generic_function {
 			".__C__derivedDefaultMethod" => 1,
 			".__C__derivedDefaultMethodWithTrace" => 1,
 			".__C__summaryDefault" => 1,
+			".DollarNames" => 1,
 			"aggregate" => 1,
 			"all.equal" => 1,
 			"anyDuplicated" => 1,
@@ -503,14 +510,23 @@ sub check_generic_function {
 			"xtfrm" => 1,
 			"+" => 1,
 			"[" => 1,
+			"[<-" => 1,
+			'[[' => 1,
+			'[[<-' => 1,
 			"\$" => 1,
 			"\$<-" => 1,
 		};
 	my $f = shift;
-	foreach my $key (%$gf) {
+	foreach my $key (sort keys %$gf) {
 		my $key2 = $key;
 		if($key eq "+" or $key eq "[" or $key eq '$' or $key eq '$<-') {
 			$key2 = "\\$key";
+		} elsif($key eq '[[') {
+			$key2 = "\\[\\[";
+		} elsif($key eq '[[<-') {
+			$key2 = '\\[\\[<-';
+		} elsif($key eq '[<-') {
+			$key2 = '\\[<-';
 		}
 		if($f =~/^$key2\.(\S+)$/) {
 			return ($key, $1);

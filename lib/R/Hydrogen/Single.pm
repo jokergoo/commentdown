@@ -114,7 +114,8 @@ sub read {
 	}
 
 	$single->{section} = $sections;
-
+	print "reading $single->{meta}->{page_name}\n";
+	
 	return $single;
 }
 
@@ -165,9 +166,10 @@ sub parse {
 	my $page_type = $self->meta("page_type");
 
 	# alias
+	my $alias;
 	if($page_type eq "S4class") {
 
-		my $alias = R::Hydrogen::Section->new("alias");
+		$alias = R::Hydrogen::Section->new("alias");
 		$alias->{tex} = $self->meta("page_name");
 		push(@{$self->{section}}, $alias);
 
@@ -176,7 +178,7 @@ sub parse {
 		# push(@{$self->{section}}, $alias);
 
 	} elsif($page_type eq "S4method") {
-		my $alias = R::Hydrogen::Section->new("alias");
+		$alias = R::Hydrogen::Section->new("alias");
 		# $alias->{tex} = $self->meta("page_function");
 		# push(@{$self->{section}}, $alias);
 
@@ -185,9 +187,16 @@ sub parse {
 		push(@{$self->{section}}, $alias);
 
 	} else {
-		my $alias = R::Hydrogen::Section->new("alias");
+		$alias = R::Hydrogen::Section->new("alias");
 		$alias->{tex} = $self->meta("page_name");
 		push(@{$self->{section}}, $alias);
+	}
+
+	my $alias_tex2 = filter_str($alias->{tex});
+	if($alias_tex2 ne $alias->{tex}) {
+		my $alias2 = R::Hydrogen::Section->new("alias");
+		$alias2->{tex} = $alias_tex2;
+		push(@{$self->{section}}, $alias2);
 	}
 
 	# docType
@@ -330,18 +339,36 @@ sub get_nearest_function_info {
 				} elsif($g eq '[[<-') {
 					$function_args =~s/,\s*value//;
 					return ($function_name, "\\method{\[\[}{$c}($function_args) <- value", "S3method", $c);
+				} elsif($g =~/^(\w+)<-$/) {
+					my $fn = $1;
+					$function_args =~s/,\s*value//;
+					return ($function_name, "\\method{$fn}{$c}($function_args) <- value", "S3method", $c);
 				} else {
 					return ($function_name, "\\method{$g}{$c}($function_args)", "S3method", $c);
 				}
 			} else {
 				if($function_name =~/^(.*)<-$/) {
-					return ($function_name, "$1(x) <- value", "");
+					my $fn = $1;
+					$function_args =~s/,\s*value//;
+					return ($function_name, "$fn($function_args) <- value", "");
 				} else {
+					if($function_name =~/^%(\w+)%$/) {
+						if($function_args =~/^(.*),\s*(.*)$/) {
+							return ($function_name, "$1 $function_name $2", "");
+						}
+					}
 					return ($function_name, "$function_name($function_args)", "");
 				}
 			}
-		} elsif($line =~/setMethod\(f\s*=\s*['"](.*?)['"]/) {  # s4method
-			$function_name = $1;
+		} elsif($line =~/(setMethod|setReplaceMethod)\(f\s*=\s*['"](.*?)['"]/) {  # s4method
+			my $is_replace_method = 0;
+			if($1 eq "setReplaceMethod") {
+				$is_replace_method = 1;
+			}
+			$function_name = $2;
+			if($is_replace_method) {
+				$function_name = $function_name."<-";
+			}
 			$i ++; 
 			$line = $lines_ref->[$i];
             chomp $line;
@@ -370,7 +397,14 @@ sub get_nearest_function_info {
 	                }
 	            }
 	            $function_args = re_format_function_args($function_args);
-				return ($function_name, "\\S4method{$function_name}{$c}($function_args)", "S4method", $c);
+	            if($function_name =~/^(.*)<-$/) {
+	            	my $function_name2 = $function_name;
+	            	$function_name2 =~s/<-//;
+	            	$function_args =~s/,\s*value//;
+	            	return ($function_name, "\\S4method{$function_name2}{$c}($function_args) <- value", "S4method", $c);
+	            } else {
+					return ($function_name, "\\S4method{$function_name}{$c}($function_args)", "S4method", $c);
+				}
 			}
 
 		} elsif($line =~/setClass\(['"](.*?)['"]/) {   # s4class
@@ -515,6 +549,23 @@ sub check_generic_function {
 			'[[<-' => 1,
 			"\$" => 1,
 			"\$<-" => 1,
+			"grid.draw" => 1,
+			"names<-" => 1,
+			"names" => 1,
+			"c" => 1,
+			"dim" => 1,
+			"nobs" => 1,
+			"length" => 1,
+			"ncol" => 1,
+			"nrow" => 1,
+			"width" => 1,
+			"width<-" => 1,
+			"height" => 1,
+			"height<-" => 1,
+			"size" => 1,
+			"size<-" => 1,
+			"widthDetails" => 1,
+			"heightDetails" => 1
 		};
 	my $f = shift;
 	foreach my $key (sort keys %$gf) {
@@ -584,25 +635,25 @@ sub export_str {
 
 	my $page_type = $self->meta("page_type");
 	if($page_type eq "S4class") {
-		"exportClasses(".$self->meta("class").")\nexport(".$self->meta("class").")";
+		"exportClasses(\"".$self->meta("class")."\")\nexport(\"".$self->meta("class")."\")";
 	} elsif($page_type eq "S4method") {
 		if($self->meta("page_function") eq "show" || $self->meta("page_function") eq "initialize") {
 			return("");
 		} 
-		"exportMethods(".$self->meta("page_function").")";
+		"exportMethods(\"".$self->meta("page_function")."\")";
 	} elsif($page_type eq "S3method") {
 		my $generic = $self->meta("page_function");
 		my $class = $self->meta('class');
 		$generic =~s/\.$class//;
-		"S3method(\"".$generic."\", ".$self->meta("class").")\n"."export(\"".$generic.".".$self->meta("class"). "\")";
+		"S3method(\"".$generic."\", \"".$self->meta("class")."\")\n"."export(\"".$generic.".".$self->meta("class"). "\")";
 	} elsif(!($page_type eq "data" || $page_type eq "package")) {
 		if($self->meta("page_function") =~/^\w*$/) {
-			"export(".$self->meta("page_function").")";
+			"export(\"".$self->meta("page_function")."\")";
 		} else {
-			"export('".$self->meta("page_function")."')";
+			"export(\"".$self->meta("page_function")."\")";
 		}
 	} elsif($page_type eq "data" && $self->meta("usage")!~/^data\(./) {
-		"export(".$self->meta("usage").")";
+		"export(\"".$self->meta("usage")."\")";
 	} else {
 		"";
 	}
@@ -761,6 +812,23 @@ sub S4method_dispatch {
 
 
 	return($dispatch);
+}
+
+
+
+sub filter_str {
+	my $str = shift;
+
+	$str =~s/\+/add/g;
+	$str =~s/\[/Extract/g;
+	$str =~s/\$<-/Assign/g;
+	$str =~s/<-/Assign/g;
+	$str =~s/\$/Subset/g;
+	$str =~s/^\./Dot./g;
+	$str =~s/^\%/pct_/g;
+	$str =~s/\%$/_pct/g;
+
+	return $str;
 }
 
 1;

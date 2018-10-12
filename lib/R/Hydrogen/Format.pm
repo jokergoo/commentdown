@@ -143,6 +143,7 @@ sub inline_format {
 	#$str = trans_font($str);
 	$str = trans_code($str);
 	$str = trans_url($str);
+
 	return $str;
 }
 
@@ -160,7 +161,12 @@ sub trans_code {
             "\\code{\\link[$a[0]]{$a[1]}}";
         }
         else {
-            "\\code{\\link{$a[0]}}";
+        	my $f = filter_str($a[0]);
+        	if($f eq $a[0]) {
+            	"\\code{\\link{$a[0]}}";
+            } else {
+            	"\\code{\\link[=$f]{$a[0]}}";
+            }
         }
         /exg;
     return $text;
@@ -184,6 +190,23 @@ sub trans_font {
 
 	return $text;
 }
+
+
+sub filter_str {
+	my $str = shift;
+
+	$str =~s/\+/add/g;
+	$str =~s/\[/Extract/g;
+	$str =~s/\$<-/Assign/g;
+	$str =~s/<-/Assign/g;
+	$str =~s/\$/Subset/g;
+	$str =~s/^\./Dot./g;
+	$str =~s/^\\%/pct_/g;
+	$str =~s/\\%$/_pct/g;
+
+	return $str;
+}
+
 
 
 1;

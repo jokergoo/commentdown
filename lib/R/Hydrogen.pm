@@ -230,6 +230,8 @@ sub filter_str {
 	$str =~s/<-/Assign/g;
 	$str =~s/\$/Subset/g;
 	$str =~s/^\./Dot./g;
+	$str =~s/^\%/pct_/g;
+	$str =~s/\%$/_pct/g;
 
 	return $str;
 }
@@ -238,9 +240,12 @@ sub filter_str {
 sub generate_generic_method {
 	my $method = shift;
 
-	my $code = "
-setGeneric('$method', function(object, ...) standardGeneric('$method'))
-";
+	my $code;
+	if($method =~/<-$/) {
+		$code = "setGeneric('$method', function(object, value, ...) standardGeneric('$method'))\n";
+	} else {
+		$code = "setGeneric('$method', function(object, ...) standardGeneric('$method'))\n";
+	}
 	return $code;
 }
 

@@ -23,6 +23,18 @@ our @EXPORT = qw(
 ##  read from original comment
 #############################################
 
+
+use JSON;
+use File::Basename;
+my $json;
+{
+  local $/; #Enable 'slurp' mode
+  open my $fh, "<", dirname($0)."/pkg_aliases_db.json" or die "cannot find pkg_aliases_db.json";
+  $json = <$fh>;
+  close $fh;
+}
+our $alias_db = decode_json($json);
+
 # list with no name
 sub read_item {
 	my $lines_ref = shift;
@@ -158,7 +170,11 @@ sub trans_code {
     $text =~s/`(.*?)`/
         my @a = split "::", $1;
         if(scalar(@a) == 2) {
-            "\\code{\\link[$a[0]]{$a[1]}}";
+        	if($alias_db->{$a[0]}->{$a[1]}) {
+        		"\\code{\\link[$a[0]::$alias_db->{$a[0]}->{$a[1]}]{$a[1]}}";
+        	} else {
+            	"\\code{\\link[$a[0]]{$a[1]}}";
+        	}
         }
         else {
         	my $f = filter_str($a[0]);
@@ -206,7 +222,5 @@ sub filter_str {
 
 	return $str;
 }
-
-
 
 1;

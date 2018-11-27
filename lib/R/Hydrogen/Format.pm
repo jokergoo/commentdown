@@ -171,7 +171,7 @@ sub trans_code {
         my @a = split "::", $1;
         if(scalar(@a) == 2) {
         	if($alias_db->{$a[0]}->{$a[1]}) {
-        		"\\code{\\link[$a[0]::$alias_db->{$a[0]}->{$a[1]}]{$a[1]}}";
+        		"\\code{\\link[$a[0]:$alias_db->{$a[0]}->{$a[1]}]{$a[1]}}";
         	} else {
             	"\\code{\\link[$a[0]]{$a[1]}}";
         	}

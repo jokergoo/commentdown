@@ -419,6 +419,7 @@ sub re_format_function_args {
 	my $str = shift;
 	my @str = split "\n", $str;
 	for(my $i = 0; $i < scalar(@str); $i ++) {
+		$str[$i] =~s/\\/\\\\/g;
 		$str[$i] =~s/^\s+//;
 		$str[$i] =~s/\s+$//;
 		$str[$i] =~s/%/\\%/g;

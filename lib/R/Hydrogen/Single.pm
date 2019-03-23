@@ -566,7 +566,8 @@ sub check_generic_function {
 			"size" => 1,
 			"size<-" => 1,
 			"widthDetails" => 1,
-			"heightDetails" => 1
+			"heightDetails" => 1,
+			"str" => 1
 		};
 	my $f = shift;
 	foreach my $key (sort keys %$gf) {

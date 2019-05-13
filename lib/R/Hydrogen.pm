@@ -214,8 +214,9 @@ sub parse {
 	if(scalar(%$S4method)) {
 		open GENERIC, ">$DIR/R/00_S4_generic_methods.R";
 		foreach my $method (keys %$S4method) {
-			next if ($method eq "initialize" || $method eq "show");
-			print GENERIC generate_generic_method($method);
+			if(!is_s4_generic($method)) {
+				print GENERIC generate_generic_method($method);
+			}
 		}
 		close GENERIC;
 	}
@@ -248,5 +249,116 @@ sub generate_generic_method {
 	}
 	return $code;
 }
+
+sub is_s4_generic {
+	my $method = shift;
+
+	my $s4_generic = {
+		"annotation" => 1,
+		"anyDuplicated" => 1,
+		"append" => 1,
+		"as.data.frame" => 1,
+		"as.list" => 1,
+		"boxplot" => 1,
+		"cbind" => 1,
+		"clusterApply" => 1,
+		"clusterApplyLB" => 1,
+		"clusterCall" => 1,
+		"clusterEvalQ" => 1,
+		"clusterExport" => 1,
+		"clusterMap" => 1,
+		"clusterSplit" => 1,
+		"colnames" => 1,
+		"combine" => 1,
+		"conditions" => 1,
+		"counts" => 1,
+		"dbconn" => 1,
+		"dbfile" => 1,
+		"density" => 1,
+		"design" => 1,
+		"dispTable" => 1,
+		"do.call" => 1,
+		"duplicated" => 1,
+		"end" => 1,
+		"estimateDispersions" => 1,
+		"estimateSizeFactors" => 1,
+		"eval" => 1,
+		"fileName" => 1,
+		"Filter" => 1,
+		"Find" => 1,
+		"get" => 1,
+		"grep" => 1,
+		"grepl" => 1,
+		"image" => 1,
+		"intersect" => 1,
+		"invertStrand" => 1,
+		"IQR" => 1,
+		"is.unsorted" => 1,
+		"lapply" => 1,
+		"lengths" => 1,
+		"mad" => 1,
+		"Map" => 1,
+		"mapply" => 1,
+		"match" => 1,
+		"mget" => 1,
+		"ncol" => 1,
+		"NCOL" => 1,
+		"normalize" => 1,
+		"nrow" => 1,
+		"NROW" => 1,
+		"order" => 1,
+		"organism" => 1,
+		"parApply" => 1,
+		"parCapply" => 1,
+		"parLapply" => 1,
+		"parLapplyLB" => 1,
+		"parRapply" => 1,
+		"parSapply" => 1,
+		"parSapplyLB" => 1,
+		"paste" => 1,
+		"plotDispEsts" => 1,
+		"plotMA" => 1,
+		"plotPCA" => 1,
+		"pmax" => 1,
+		"pmax.int" => 1,
+		"pmin" => 1,
+		"pmin.int" => 1,
+		"Position "=> 1,
+		"rank" => 1,
+		"rbind" => 1,
+		"Reduce" => 1,
+		"relist" => 1,
+		"rep.int" => 1,
+		"residuals" => 1,
+		"rownames" => 1,
+		"sapply" => 1,
+		"score" => 1,
+		"setdiff" => 1,
+		"sizeFactors" => 1,
+		"sort" => 1,
+		"species" => 1,
+		"start" => 1,
+		"strand" => 1,
+		"subset" => 1,
+		"table" => 1,
+		"tapply" => 1,
+		"union" => 1,
+		"unique" => 1,
+		"unsplit" => 1,
+		"updateObject" => 1,
+		"weights" => 1,
+		"which" => 1,
+		"which.max" => 1,
+		"which.min" => 1,
+		"width" => 1,
+		"xtabs" => 1
+	};
+
+	if($s4_generic->{$method}) {
+		return 1;
+	} else {
+		return 0;
+	}
+};
 
 1;

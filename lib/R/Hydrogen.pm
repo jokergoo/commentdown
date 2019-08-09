@@ -351,7 +351,8 @@ sub is_s4_generic {
 		"which.max" => 1,
 		"which.min" => 1,
 		"width" => 1,
-		"xtabs" => 1
+		"xtabs" => 1,
+		"show" => 1,
 	};
 
 	if($s4_generic->{$method}) {

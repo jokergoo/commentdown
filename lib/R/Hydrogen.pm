@@ -215,7 +215,9 @@ sub parse {
 		open GENERIC, ">$DIR/R/00_S4_generic_methods.R";
 		foreach my $method (keys %$S4method) {
 			if(!is_s4_generic($method)) {
-				print GENERIC generate_generic_method($method);
+				if($method ne "show") {
+					print GENERIC generate_generic_method($method);
+				}
 			}
 		}
 		close GENERIC;

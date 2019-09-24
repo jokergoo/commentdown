@@ -140,7 +140,7 @@ sub parse {
 		}
 
 		my $s = R::Hydrogen::Single::S4method_dispatch($method, $class);
-		my $man_file = "$DIR/man/".filter_str($s->meta("page_name")).".rd";
+		my $man_file = "$DIR/man/".filter_str($s->meta("page_name")).".Rd";
 
 		print "generating $man_file\n";
 		if(!$is_overwrite) {

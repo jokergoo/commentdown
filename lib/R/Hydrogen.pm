@@ -162,7 +162,7 @@ sub parse {
 	for(my $i = 0; $i < scalar(@items); $i ++) {
 
 		my $s;
-		my $man_file = "$DIR/man/".filter_str($items[$i]->meta("page_name")).".rd";
+		my $man_file = "$DIR/man/".filter_str($items[$i]->meta("page_name")).".Rd";
 
 		print "generating $man_file\n";
 		if($is_overwrite) {

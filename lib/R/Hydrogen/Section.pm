@@ -161,7 +161,7 @@ sub string {
 
 	if($self->{name} eq "name" || $self->{name} eq "alias" || $self->{name} eq "docType") {
 		$self->{tex} =~s/^\s+|\s+$//sg;
-		$self->{tex} =~s/%/\%/g;
+		$self->{tex} =~s/%/\\%/g;
 		"\\$self->{name}"."{$self->{tex}}\n";
 	} elsif(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
 		if($self->{name} eq "usage") {

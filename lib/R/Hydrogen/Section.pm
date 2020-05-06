@@ -165,7 +165,11 @@ sub string {
 		"\\$self->{name}"."{$self->{tex}}\n";
 	} elsif(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
 		if($self->{name} eq "usage") {
-			$self->{tex} =~s/%/\%/g;
+			if($self->{tex} =~/%/ && $self->{tex} =~/\(/) {
+				# print $self->{tex}, "\n============\n";
+			} else {
+				$self->{tex} =~s/%/\\%/g;
+			}
 		}
 		"\\$self->{name}"."{\n$self->{tex}\n}\n";
 	} else {

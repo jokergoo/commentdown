@@ -73,7 +73,6 @@ sub convert_to_tree {
 		my $h;
 		if($self->{is_example}) {
 			($h, $i) = read_paragraph($lines_ref, $i);
-			$h =~s/^\s+|\s+$//sg;
 			$tree->{shift(@$dl)."_paragraph"} = $h;
 		} else {
 			if($lines_ref->[$i] =~/^-\s/) {
@@ -108,7 +107,7 @@ sub format {
 	foreach my $k (sort keys %{$self->{tree}}) {
 		my $v = $self->{tree}->{$k};
 		if($self->{is_example}) {
-			$str .= "$v\n\n";
+			$str .= "$v\n";
 		} elsif($k =~/_paragraph/) {
 			$str .= inline_format($v)."\n\n";
 		} elsif($k =~/_named_item/) {
@@ -162,7 +161,11 @@ sub string {
 	if($self->{name} eq "name" || $self->{name} eq "alias" || $self->{name} eq "docType") {
 		$self->{tex} =~s/^\s+|\s+$//sg;
 		$self->{tex} =~s/%/\\%/g;
-		"\\$self->{name}"."{$self->{tex}}\n";
+		if($self->{name} eq "name" and $self->{tex} =~/<-/) {
+			"\\$self->{name}"."{".filter_str($self->{tex})."}\n";
+		} else {
+			"\\$self->{name}"."{$self->{tex}}\n";
+		}
 	} elsif(defined($PREDEFINED_SECTION_NAME->{$self->{name}})) {
 		if($self->{name} eq "usage") {
 			if($self->{tex} =~/%/ && $self->{tex} =~/\(/) {
@@ -176,5 +179,21 @@ sub string {
 		"\\section{".ucfirst($self->{name})."}{\n$self->{tex}}\n";
 	}
 }
+
+sub filter_str {
+	my $str = shift;
+
+	$str =~s/\+/add/g;
+	$str =~s/\[/Extract/g;
+	$str =~s/\$<-/Assign/g;
+	$str =~s/<-/Assign/g;
+	$str =~s/\$/Subset/g;
+	$str =~s/^\./Dot./g;
+	$str =~s/^\%/pct_/g;
+	$str =~s/\%$/_pct/g;
+
+	return $str;
+}
+
 
 1;

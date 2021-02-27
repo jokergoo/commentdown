@@ -88,7 +88,7 @@ sub read {
 			} else {
 				$line =~s/^#\s?//s;  # leading space
 				$line =~s/^\s+$//g;  # tracing space
-				#$line .= "\n" if($line ne "");
+				# $line .= "\n" if($line ne "");
 				$current_section->add_line($line);
 			}
 		} elsif($is_function) {
@@ -192,11 +192,12 @@ sub parse {
 		push(@{$self->{section}}, $alias);
 	}
 
+	# allow second alias?
 	my $alias_tex2 = filter_str($alias->{tex});
 	if($alias_tex2 ne $alias->{tex}) {
 		my $alias2 = R::Hydrogen::Section->new("alias");
 		$alias2->{tex} = $alias_tex2;
-		push(@{$self->{section}}, $alias2);
+		unshift(@{$self->{section}}, $alias2);
 	}
 
 	# docType
